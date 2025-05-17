@@ -1,7 +1,9 @@
 """Team statistics model."""
 
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import Any
 
 
 @dataclass
@@ -16,7 +18,7 @@ class TeamStats:
     total_matches: int
 
     @classmethod
-    def from_matches(cls, matches: List[Dict], team_id: int) -> "TeamStats":
+    def from_matches(cls, matches: list[dict[str, Any]], team_id: int) -> TeamStats:
         """Create TeamStats instance from match data."""
         wins = 0
         draws = 0
@@ -36,14 +38,15 @@ class TeamStats:
                 goals_scored += away_goals
                 goals_conceded += home_goals
 
-            if match["score"]["winner"] == "DRAW":
-                draws += 1
-            elif (is_home and match["score"]["winner"] == "HOME_TEAM") or (
-                not is_home and match["score"]["winner"] == "AWAY_TEAM"
-            ):
-                wins += 1
-            else:
-                losses += 1
+            match match["score"]["winner"]:
+                case "DRAW":
+                    draws += 1
+                case "HOME_TEAM" if is_home:
+                    wins += 1
+                case "AWAY_TEAM" if not is_home:
+                    wins += 1
+                case _:
+                    losses += 1
 
         return cls(
             wins=wins,

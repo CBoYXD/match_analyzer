@@ -1,18 +1,34 @@
 """Team service implementation."""
 
+from __future__ import annotations
+
+from typing import Any, TypedDict
+
 import pandas as pd
-from typing import Dict, List, Optional
 
 from ..api.football_api import FootballAPIClient
 from ..models.team_stats import TeamStats
 
 
+class MatchData(TypedDict):
+    """Type definition for match data."""
+
+    utcDate: str
+    competition: dict[str, str]
+    homeTeam: dict[str, Any]
+    awayTeam: dict[str, Any]
+    score: dict[str, dict[str, int | None]]
+
+
 class TeamService:
-    def __init__(self, api_client: FootballAPIClient):
+    """Service for handling team-related operations."""
+
+    def __init__(self, api_client: FootballAPIClient) -> None:
+        """Initialize the team service."""
         self.api_client = api_client
 
     def get_team_matches_dataframe(
-        self, matches: List[Dict], team_id: int
+        self, matches: list[MatchData], team_id: int
     ) -> pd.DataFrame:
         """Convert matches data to pandas DataFrame."""
         matches_data = [
@@ -41,16 +57,16 @@ class TeamService:
             ],
         )
 
-    def _get_match_result(self, match: Dict, team_id: int) -> str:
+    def _get_match_result(self, match: MatchData, team_id: int) -> str:
         """Determine match result for the team."""
-        if match["score"]["winner"] == "DRAW":
-            return "Нічия"
-        elif (
-            match["homeTeam"]["id"] == team_id
-            and match["score"]["winner"] == "HOME_TEAM"
-        ) or (
-            match["awayTeam"]["id"] == team_id
-            and match["score"]["winner"] == "AWAY_TEAM"
-        ):
-            return "Перемога"
-        return "Поразка"
+        is_home = match["homeTeam"]["id"] == team_id
+
+        match match["score"]["winner"]:
+            case "DRAW":
+                return "Нічия"
+            case "HOME_TEAM" if is_home:
+                return "Перемога"
+            case "AWAY_TEAM" if not is_home:
+                return "Перемога"
+            case _:
+                return "Поразка"

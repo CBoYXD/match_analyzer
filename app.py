@@ -1,9 +1,12 @@
 """Main Streamlit application."""
 
+from __future__ import annotations
+
+import logging
+
+import pandas as pd
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
-import pandas as pd
-import logging
 
 from src.config.settings import (
     LEAGUES,
@@ -24,7 +27,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main() -> None:
     """Main application entry point."""
     st.set_page_config(
         page_title="Football Team Analytics", page_icon="⚽", layout="wide"
@@ -53,62 +56,63 @@ def main():
         logger.info(f"User requested analysis for {team_name}")
         team_id = teams_dict.get(team_name, {}).get("id")
 
-        if team_id:
-            st.header(f"Статистика команди: {team_name} ({league})")
-            st.markdown("---")
-
-            # Get team matches
-            matches = api_client.get_team_matches(team_id, DEFAULT_MATCH_LIMIT)
-            matches = sorted(matches, key=lambda m: m["utcDate"], reverse=True)
-
-            if matches:
-                # Calculate and display statistics
-                stats = TeamStats.from_matches(matches, team_id)
-
-                # Display metrics
-                col1, col2, col3, col4 = st.columns(4)
-                with col1:
-                    st.metric("Перемоги", stats.wins)
-                with col2:
-                    st.metric("Нічиї", stats.draws)
-                with col3:
-                    st.metric("Поразки", stats.losses)
-                with col4:
-                    st.metric("Всього матчів", stats.total_matches)
-
-                # Display goals chart
-                st.subheader("🥅 Голи")
-                goals_df = pd.DataFrame(
-                    {
-                        "Показник": ["Забито", "Пропущено"],
-                        "Кількість": [stats.goals_scored, stats.goals_conceded],
-                    }
-                )
-                st.bar_chart(goals_df.set_index("Показник"))
-
-                # Display matches table
-                st.subheader("📅 Останні матчі")
-                matches_df = team_service.get_team_matches_dataframe(matches, team_id)
-                st.dataframe(matches_df)
-
-                # Download button
-                csv = matches_df.to_csv(
-                    index=False, sep=",", encoding="utf-8-sig"
-                ).encode("utf-8-sig")
-                st.download_button(
-                    label="⬇️ Завантажити статистику (CSV)",
-                    data=csv,
-                    file_name=f"{team_name}_matches.csv",
-                    mime="text/csv",
-                )
-
-            else:
-                st.info("Матчів для цієї команди не знайдено.")
-
-            st.markdown("---")
-        else:
+        if not team_id:
             st.error("Команду не знайдено.")
             logger.error(f"Team ID not found for {team_name}")
+            return
+
+        st.header(f"Статистика команди: {team_name} ({league})")
+        st.markdown("---")
+
+        # Get team matches
+        matches = api_client.get_team_matches(team_id, DEFAULT_MATCH_LIMIT)
+        matches = sorted(matches, key=lambda m: m["utcDate"], reverse=True)
+
+        if not matches:
+            st.info("Матчів для цієї команди не знайдено.")
+            return
+
+        # Calculate and display statistics
+        stats = TeamStats.from_matches(matches, team_id)
+
+        # Display metrics
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Перемоги", stats.wins)
+        with col2:
+            st.metric("Нічиї", stats.draws)
+        with col3:
+            st.metric("Поразки", stats.losses)
+        with col4:
+            st.metric("Всього матчів", stats.total_matches)
+
+        # Display goals chart
+        st.subheader("🥅 Голи")
+        goals_df = pd.DataFrame(
+            {
+                "Показник": ["Забито", "Пропущено"],
+                "Кількість": [stats.goals_scored, stats.goals_conceded],
+            }
+        )
+        st.bar_chart(goals_df.set_index("Показник"))
+
+        # Display matches table
+        st.subheader("📅 Останні матчі")
+        matches_df = team_service.get_team_matches_dataframe(matches, team_id)
+        st.dataframe(matches_df)
+
+        # Download button
+        csv = matches_df.to_csv(index=False, sep=",", encoding="utf-8-sig").encode(
+            "utf-8-sig"
+        )
+        st.download_button(
+            label="⬇️ Завантажити статистику (CSV)",
+            data=csv,
+            file_name=f"{team_name}_matches.csv",
+            mime="text/csv",
+        )
+
+        st.markdown("---")
 
 
 if __name__ == "__main__":

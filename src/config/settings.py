@@ -1,11 +1,15 @@
 """Configuration settings for the Football Analytics application."""
 
+from __future__ import annotations
+
+from typing import Final
+
 # API Configuration
-API_BASE_URL = "https://api.football-data.org/v4"
-API_REFRESH_INTERVAL = 600000  # 10 minutes in milliseconds
+API_BASE_URL: Final[str] = "https://api.football-data.org/v4"
+API_REFRESH_INTERVAL: Final[int] = 600000  # 10 minutes in milliseconds
 
 # League Configuration
-LEAGUES = {
+LEAGUES: Final[dict[str, str]] = {
     "Premier League": "PL",
     "La Liga": "PD",
     "Bundesliga": "BL1",
@@ -14,5 +18,5 @@ LEAGUES = {
 }
 
 # Application Settings
-DEFAULT_MATCH_LIMIT = 10
-DEFAULT_TEAM = "Real Madrid"
+DEFAULT_MATCH_LIMIT: Final[int] = 10
+DEFAULT_TEAM: Final[str] = "Real Madrid"
