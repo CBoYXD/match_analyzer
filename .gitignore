@@ -172,3 +172,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Poetry
+poetry.lock
+
+# Streamlit settings
+.streamlit/

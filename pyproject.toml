@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "match-analyzer"
+version = "0.1.0"
+description = ""
+authors = ["CBoYXD <python.rust.cpp@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+package-mode = false  # This disables package mode
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+streamlit = "^1.45.0"
+httpx = "^0.28.1"
+environs = "^14.1.1"
+matplotlib = "^3.10.3"
+streamlit-autorefresh = "^1.0.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
